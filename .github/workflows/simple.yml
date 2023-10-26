@@ -40,6 +40,7 @@ jobs:
       with:
         resourceGroupName: ${{ env.AZURE_RESOURCEGROUP_NAME }}
         template: ./main.bicep
+        # テンプレートのパラメータを指定する。parameter.json と adminPassword を併記することで、parameter.json内のadminPasswordを上書きできる。
         parameters: 
           ./parameter.json
           adminPassword=${{ secrets.AZURE_VM_ADMIN_PASSWORD }}
