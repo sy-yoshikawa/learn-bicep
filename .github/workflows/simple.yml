@@ -6,6 +6,10 @@ on:
 env:
   AZURE_RESOURCEGROUP_NAME: rg-yoshikawa
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
