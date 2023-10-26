@@ -23,4 +23,4 @@ jobs:
     - uses: azure/CLI@v1
       with:
         inlineScript: |
-          az deployment group delete -g ${{ env.AZURE_RESOURCEGROUP_NAME }} -n main
+          az deployment group delete -g ${{ env.AZURE_RESOURCEGROUP_NAME }} -n learn-bicep

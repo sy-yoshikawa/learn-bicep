@@ -23,6 +23,7 @@ jobs:
     - uses: azure/arm-deploy@v1
       with:
         resourceGroupName: ${{ env.AZURE_RESOURCEGROUP_NAME }}
+        deploymentName: learn-bicep
         template: ./main.bicep
         parameters: 
           ./parameter.json
