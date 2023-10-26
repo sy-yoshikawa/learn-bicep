@@ -69,6 +69,7 @@ jobs:
     needs: preview
     # ToDo: Environmentを追加して、承認がないとデプロイできないようにする。
     steps:
+    - uses: actions/checkout@v4
     - uses: azure/login@v1
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
