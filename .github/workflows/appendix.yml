@@ -1,5 +1,5 @@
 # ワークフロー全体の名前を定義する。
-name: deploy Bicep to Azure
+name: deploy Bicep to Azure after lint, validate and preview
 
 on:
   workflow_dispatch:
