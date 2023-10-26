@@ -1,0 +1,83 @@
+# ワークフロー全体の名前を定義する。
+name: deploy Bicep to Azure
+
+on:
+  workflow_dispatch:
+
+env:
+  AZURE_RESOURCEGROUP_NAME: rg-yoshikawa
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  # lintジョブ
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    # Bicepの構文チェックを実行する。
+    - run: az bicep build --file ./main.bicep
+
+  # validateジョブ
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    # Bicepの検証を実行するアクション
+    - uses: azure/arm-deploy@v1
+      with:
+        # deploymentMode: validation で検証モードを指定する。検証モードではAzureリソースはデプロイされない。
+        deploymentMode: validation
+        resourceGroupName: ${{ env.AZURE_RESOURCEGROUP_NAME }}
+        template: ./main.bicep
+        parameters: 
+          ./parameter.json
+          adminPassword=${{ secrets.AZURE_VM_ADMIN_PASSWORD }}
+
+  # previewジョブ
+  preview:
+    runs-on: ubuntu-latest
+    # lintジョブとvalidateジョブが正常に完了したら実行する。
+    needs: [lint, validate]
+    steps:
+    - uses: actions/checkout@v4
+    - uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - uses: azure/arm-deploy@v1
+      with:
+        resourceGroupName: ${{ env.AZURE_RESOURCEGROUP_NAME }}
+        template: ./main.bicep
+        parameters: 
+          ./parameter.json
+          adminPassword=${{ secrets.AZURE_VM_ADMIN_PASSWORD }}
+        additionalArguments: --what-if
+
+  # deployジョブ
+  deploy:
+    runs-on: ubuntu-latest
+    # previewジョブが正常に完了したら実行する。
+    needs: preview
+    # ToDo: Environmentを追加して、承認がないとデプロイできないようにする。
+    steps:
+    - uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - uses: azure/arm-deploy@v1
+      with:
+        resourceGroupName: ${{ env.AZURE_RESOURCEGROUP_NAME }}
+        template: ./main.bicep
+        parameters: 
+          ./parameter.json
+          adminPassword=${{ secrets.AZURE_VM_ADMIN_PASSWORD }}
