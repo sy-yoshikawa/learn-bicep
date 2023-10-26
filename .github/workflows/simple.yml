@@ -1,29 +1,44 @@
+# ワークフロー全体の名前を定義する。
 name: deploy Bicep to Azure
 
+# on: ではGitHub Actionsワークフローの起動条件を定義する。
 on:
+  # workflow_dispatch: は手動でワークフローを起動するためのトリガー。
   workflow_dispatch:
 
+# env: ではワークフローで使用する環境変数を定義する。本ワークフローではAzureリソースグループ名を定義している。
 env:
   AZURE_RESOURCEGROUP_NAME: rg-yoshikawa
 
+# permissions: ではワークフローで使用するGitHub Secretsのアクセス権限を定義する。後述の azure/login@v1 で必須となる。
 permissions:
   id-token: write
   contents: read
 
+# jobs: ではワークフローの実行内容を定義する。
 jobs:
+  # ここでの deploy: はジョブ名を指す。ワークフローの実行単位を定義する。ジョブは複数定義可能だが、本ワークフローでは1つのみ。
   deploy:
+    # runs-on: ではジョブの実行環境を定義する。ここではubuntu-latestを指定している。
     runs-on: ubuntu-latest
+    # steps: ではジョブの実行内容を定義する。
     steps:
-    - uses: actions/checkout@v3
+    # uses: ではGitHub Actionsで提供されているアクションを指定する。
+    # GitHubリポジトリをチェックアウトするアクション https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v4
+
+    # Azureにログインするアクション https://github.com/marketplace/actions/azure-login
     - uses: azure/login@v1
       with:
+        # リポジトリのSecretsに登録したAzureサブスクリプションの情報を参照しログインする。
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    # テンプレートを使用してAzureリソースをデプロイするアクション https://github.com/marketplace/actions/deploy-azure-resource-manager-arm-template
     - uses: azure/arm-deploy@v1
       with:
         resourceGroupName: ${{ env.AZURE_RESOURCEGROUP_NAME }}
-        deploymentName: learn-bicep
         template: ./main.bicep
         parameters: 
           ./parameter.json
