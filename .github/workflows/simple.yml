@@ -27,5 +27,5 @@ jobs:
         resourceGroupName: ${{ env.AZURE_RESOURCEGROUP_NAME }}
         template: ./main.bicep
         parameters: 
-          ./parameters.bicepparam
+          ./parameter.bicepparam
           adminPassword=${{ secrets.AZURE_VM_ADMIN_PASSWORD }}
